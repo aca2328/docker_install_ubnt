@@ -1,0 +1,33 @@
+##################################################
+# install docker on ubuntu 16-04 and 18.04
+# use this command : `ansible-playbook ubuntu-ansible-docker-install.yml -i hosts --private-key=/Users/xxxxxxx/id-rsa \
+# -u ubuntu --ask-become-pass -e "ansible_python_interpreter=/usr/bin/python3"`
+# maintainer: antoine@avinetworks.com
+##################################################
+
+- hosts: all
+  become: true
+  tasks:
+  - name: Update and upgrade apt packages
+    apt:
+      upgrade: dist
+      update_cache: yes
+  - name: Add Docker GPG key
+    apt_key: url=https://download.docker.com/linux/ubuntu/gpg
+  - name: Add Docker APT repository
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
+  - name: Install list of packages
+    apt:
+      name: ['apt-transport-https','ca-certificates','curl','software-properties-common','docker-ce']
+      state: present
+      update_cache: yes
+  - name: add user ubuntu to group docker 
+    user:
+      name: ubuntu
+      groups: docker
+      append: yes
+  - name: enable docker service on boot
+    systemd:
+      name: docker
+      enabled: yes
